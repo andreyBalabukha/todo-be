@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  db:
+    container_name: postgres_container
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: test_db
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+  app:
+    container_name: app_server
+    build: .
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - db
+    restart: unless-stopped
+    volumes:
+      - /app/node_modules  # Maintain node_modules, but don't mount the whole app directory
+
+
+volumes:
+  pgdata:
